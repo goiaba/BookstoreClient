@@ -38,12 +38,12 @@ public final class BookClient {
 			new InputStreamReader(System.in));
 	private static Map<Integer, Integer> fieldSize = new HashMap<Integer, Integer>();
 	private static List<Short> selectedBooks = new ArrayList<Short>();
-	
+
 	private static AddressService addressService;
 	private static BookService bookService;
 	private static CustomerService customerService;
 	private static OrderService orderService;
-	
+
 	private static String uri = "http://localhost:8080/project2";
 	private static String addressServiceAddress;
 	private static String bookServiceAddress;
@@ -60,19 +60,25 @@ public final class BookClient {
 	public static void main(String args[]) throws Exception {
 
 		if (args.length != 1) {
-			System.out.println("********************************************************************************************");
-			System.out.println("***                                                                                      ***");
-			System.out.println("*** Using default local URI: http://localhost:8080/project2. You can pass another one as argument ***");
-			System.out.println("***                                                                                      ***");
-			System.out.println("********************************************************************************************");
-		} else 		
+			System.out
+					.println("**********************************************************************************");
+			System.out
+					.println("***                                                                            ***");
+			System.out
+					.println("*** Using http://localhost:8080/project2. You can pass another URI as argument ***");
+			System.out
+					.println("***                                                                            ***");
+			System.out
+					.println("**********************************************************************************");
+			waitEnter();
+		} else
 			uri = args[0];
-		
-		addressServiceAddress = uri + "/Address";  
-		bookServiceAddress = uri + "/Book";        
+
+		addressServiceAddress = uri + "/Address";
+		bookServiceAddress = uri + "/Book";
 		customerServiceAddress = uri + "/Customer";
-		orderServiceAddress = uri + "/Order";      
-		
+		orderServiceAddress = uri + "/Order";
+
 		int option = 0;
 
 		do {
@@ -97,7 +103,7 @@ public final class BookClient {
 					_5_selectBooksToBuy();
 					break;
 				case 6:
-					_6_printSelectedBooks();
+					_6_printSelectedBooks(true);
 					break;
 				case 7:
 					_7_buySelectedBooks();
@@ -120,12 +126,16 @@ public final class BookClient {
 			} catch (NumberFormatException | IOException e) {
 				System.out.println("Invalid option. Try again.");
 				option = 0;
+			} catch (RuntimeException e) {
+				System.out.println("Error processing your request.");
+				waitEnter();
+				e.printStackTrace();
 			}
 		} while (option != 11);
 
 	}
 
-	public static void _1_listAll() throws IOException {
+	public static void _1_listAll() {
 		List<Book> books = getBookService().listAllBooks();
 		if (!books.isEmpty())
 			printBooks("=+- List of available books -+=\n", books);
@@ -140,7 +150,7 @@ public final class BookClient {
 		List<Book> books = getBookService().searchBookByTitle(term);
 		if (!books.isEmpty())
 			printBooks("=+- List of books of title like \"" + term + "\" -+=",
-				books);
+					books);
 		else
 			System.out.println("No book found.");
 		waitEnter();
@@ -183,14 +193,15 @@ public final class BookClient {
 		waitEnter();
 	}
 
-	public static void _6_printSelectedBooks() throws IOException {
+	public static void _6_printSelectedBooks(boolean waitEnter) {
 		printBooks("=+- List of selected books -+=", getBookService()
 				.searchBookByIds(selectedBooks));
-		waitEnter();
+		if (waitEnter)
+			waitEnter();
 	}
 
 	public static void _7_buySelectedBooks() throws IOException {
-		_6_printSelectedBooks();
+		_6_printSelectedBooks(false);
 
 		System.out.print("\nType your login (empty if you don't have one): ");
 		String login = br.readLine();
@@ -227,11 +238,12 @@ public final class BookClient {
 
 		Short orderId = getOrderService().createOrder(customer, address,
 				getBookService().searchBookByIds(selectedBooks), payment);
-		System.out.println("Created order with id=" + orderId);
+		selectedBooks.clear();
+		System.out.println("Order created with id=" + orderId);
 		waitEnter();
 	}
 
-	public static void _8_clearSelectedBooks() throws IOException {
+	public static void _8_clearSelectedBooks() {
 		selectedBooks.clear();
 		System.out.println("List of selected book is empty");
 		waitEnter();
@@ -246,10 +258,15 @@ public final class BookClient {
 
 			printOrder(orders, false);
 			System.out.print("\nType id of order to see status: ");
-			String orderId = br.readLine().trim();
-			OrderStatus status = orderService.checkOrderStatus(new Short(
-					orderId));
-			System.out.println("Order [id=" + orderId + "] status: " + status);
+			Short orderId = new Short(br.readLine().trim());
+			if (customerOwnsOrder(orders, orderId)) {
+				OrderStatus status = orderService.checkOrderStatus(orderId);
+				System.out.println("Order [id=" + orderId + "] status: "
+						+ status);
+			} else {
+				System.out.println("There is no order with id=" + orderId
+						+ " associated with this customer.");
+			}
 
 		} else {
 			System.out
@@ -368,7 +385,7 @@ public final class BookClient {
 					.append(tabulate(order.getPayment().getType().name(), 2));
 			if (printStatus)
 				row.append(" | ")
-					.append(tabulate(order.getStatus().value(), 3));
+						.append(tabulate(order.getStatus().value(), 3));
 			row.append("|\n");
 		}
 		System.out.println(row.toString());
@@ -473,8 +490,19 @@ public final class BookClient {
 		return payment;
 	}
 
-	private static void waitEnter() throws IOException {
+	private static boolean customerOwnsOrder(List<Order> orders, Short orderId) {
+		for (Order order : orders) {
+			if (order.getId().equals(orderId))
+				return true;
+		}
+		return false;
+	}
+
+	private static void waitEnter() {
 		System.out.print("\nPress <enter> to continue...");
-		System.in.read();
+		try {
+			System.in.read();
+		} catch (IOException ex) {
+		}
 	}
 }
