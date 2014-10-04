@@ -255,7 +255,6 @@ public final class BookClient {
 		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
 
 		if (!orders.isEmpty()) {
-
 			printOrder(orders, false);
 			System.out.print("\nType id of order to see status: ");
 			Short orderId = new Short(br.readLine().trim());
@@ -267,7 +266,6 @@ public final class BookClient {
 				System.out.println("There is no order with id=" + orderId
 						+ " associated with this customer.");
 			}
-
 		} else {
 			System.out
 					.println("There is no order associated with this customer.");
@@ -282,18 +280,20 @@ public final class BookClient {
 		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
 
 		if (!orders.isEmpty()) {
-
 			printOrder(orders, true);
 			System.out
 					.println("\nNote: Only orders in 'PROCESSING' status can be cancelled.");
-
 			System.out.print("\nType id of order you want to cancel: ");
-			String orderId = br.readLine();
-			if (orderService.cancelOrder(new Short(orderId)))
-				System.out.println("Order canceled.");
-			else
-				System.out.println("Order could not be canceled.");
-
+			Short orderId = new Short(br.readLine().trim());
+			if (customerOwnsOrder(orders, orderId)) {
+				if (orderService.cancelOrder(orderId))
+					System.out.println("Order canceled.");
+				else
+					System.out.println("Order could not be canceled.");
+			} else {
+				System.out.println("There is no order with id=" + orderId
+						+ " associated with this customer.");
+			}
 		} else {
 			System.out
 					.println("There is no order associated with this customer.");
