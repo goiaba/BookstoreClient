@@ -30,9 +30,11 @@ public class ObjectFactory {
 	private final static QName _CreateOrUpdateCustomer_QNAME = new QName("http://service.comp433.luc.edu/", "createOrUpdateCustomer");
 	private final static QName _FindCustomerByLoginResponse_QNAME = new QName("http://service.comp433.luc.edu/", "findCustomerByLoginResponse");
 	private final static QName _Customer_QNAME = new QName("http://service.comp433.luc.edu/", "customer");
+	private final static QName _FindOrderByCustomerLoginResponse_QNAME = new QName("http://service.comp433.luc.edu/", "findOrderByCustomerLoginResponse");
 	private final static QName _FindPaymentById_QNAME = new QName("http://service.comp433.luc.edu/", "findPaymentById");
 	private final static QName _CreateOrder_QNAME = new QName("http://service.comp433.luc.edu/", "createOrder");
 	private final static QName _CreateOrderResponse_QNAME = new QName("http://service.comp433.luc.edu/", "createOrderResponse");
+	private final static QName _FindOrderByCustomerLogin_QNAME = new QName("http://service.comp433.luc.edu/", "findOrderByCustomerLogin");
 	private final static QName _CheckOrderStatus_QNAME = new QName("http://service.comp433.luc.edu/", "checkOrderStatus");
 	private final static QName _FindAddressByCustomerId_QNAME = new QName("http://service.comp433.luc.edu/", "findAddressByCustomerId");
 	private final static QName _FindAddressById_QNAME = new QName("http://service.comp433.luc.edu/", "findAddressById");
@@ -71,6 +73,14 @@ public class ObjectFactory {
      */
     public CreateOrderResponse createCreateOrderResponse() {
         return new CreateOrderResponse();
+    }
+
+	/**
+     * Create an instance of {@link FindOrderByCustomerLogin }
+     * 
+     */
+    public FindOrderByCustomerLogin createFindOrderByCustomerLogin() {
+        return new FindOrderByCustomerLogin();
     }
 
 	/**
@@ -218,10 +228,18 @@ public class ObjectFactory {
     }
 
 	/**
+     * Create an instance of {@link FindOrderByCustomerLoginResponse }
+     * 
+     */
+    public FindOrderByCustomerLoginResponse createFindOrderByCustomerLoginResponse() {
+        return new FindOrderByCustomerLoginResponse();
+    }
+
+	/**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindPaymentByCustomerIdResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByCustomerIdResponse")
+//    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByCustomerIdResponse")
     public JAXBElement<FindPaymentByCustomerIdResponse> createFindPaymentByCustomerIdResponse(FindPaymentByCustomerIdResponse value) {
         return new JAXBElement<FindPaymentByCustomerIdResponse>(_FindPaymentByCustomerIdResponse_QNAME, FindPaymentByCustomerIdResponse.class, null, value);
     }
@@ -230,7 +248,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link FindPaymentByIdResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByIdResponse")
+//    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByIdResponse")
     public JAXBElement<FindPaymentByIdResponse> createFindPaymentByIdResponse(FindPaymentByIdResponse value) {
         return new JAXBElement<FindPaymentByIdResponse>(_FindPaymentByIdResponse_QNAME, FindPaymentByIdResponse.class, null, value);
     }
@@ -296,10 +314,19 @@ public class ObjectFactory {
     }
 
 	/**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindOrderByCustomerLoginResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findOrderByCustomerLoginResponse")
+    public JAXBElement<FindOrderByCustomerLoginResponse> createFindOrderByCustomerLoginResponse(FindOrderByCustomerLoginResponse value) {
+        return new JAXBElement<FindOrderByCustomerLoginResponse>(_FindOrderByCustomerLoginResponse_QNAME, FindOrderByCustomerLoginResponse.class, null, value);
+    }
+
+	/**
      * Create an instance of {@link JAXBElement }{@code <}{@link FindPaymentById }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentById")
+//    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentById")
     public JAXBElement<FindPaymentById> createFindPaymentById(FindPaymentById value) {
         return new JAXBElement<FindPaymentById>(_FindPaymentById_QNAME, FindPaymentById.class, null, value);
     }
@@ -309,7 +336,8 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "createOrder")
-    public JAXBElement<CreateOrder> createCreateOrder(CreateOrder value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "createOrder")
+	public JAXBElement<CreateOrder> createCreateOrder(CreateOrder value) {
         return new JAXBElement<CreateOrder>(_CreateOrder_QNAME, CreateOrder.class, null, value);
     }
 
@@ -318,8 +346,18 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "createOrderResponse")
-    public JAXBElement<CreateOrderResponse> createCreateOrderResponse(CreateOrderResponse value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "createOrderResponse")
+	public JAXBElement<CreateOrderResponse> createCreateOrderResponse(CreateOrderResponse value) {
         return new JAXBElement<CreateOrderResponse>(_CreateOrderResponse_QNAME, CreateOrderResponse.class, null, value);
+    }
+
+	/**
+     * Create an instance of {@link JAXBElement }{@code <}{@link FindOrderByCustomerLogin }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findOrderByCustomerLogin")
+    public JAXBElement<FindOrderByCustomerLogin> createFindOrderByCustomerLogin(FindOrderByCustomerLogin value) {
+        return new JAXBElement<FindOrderByCustomerLogin>(_FindOrderByCustomerLogin_QNAME, FindOrderByCustomerLogin.class, null, value);
     }
 
 	/**
@@ -327,7 +365,8 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "checkOrderStatus")
-    public JAXBElement<CheckOrderStatus> createCheckOrderStatus(CheckOrderStatus value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "checkOrderStatus")
+	public JAXBElement<CheckOrderStatus> createCheckOrderStatus(CheckOrderStatus value) {
         return new JAXBElement<CheckOrderStatus>(_CheckOrderStatus_QNAME, CheckOrderStatus.class, null, value);
     }
 
@@ -389,7 +428,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link FindPaymentByCustomerId }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByCustomerId")
+//    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "findPaymentByCustomerId")
     public JAXBElement<FindPaymentByCustomerId> createFindPaymentByCustomerId(FindPaymentByCustomerId value) {
         return new JAXBElement<FindPaymentByCustomerId>(_FindPaymentByCustomerId_QNAME, FindPaymentByCustomerId.class, null, value);
     }
@@ -506,6 +545,7 @@ public class ObjectFactory {
      */
 ////    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "book")
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "book")
+	@XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "book")
 	public JAXBElement<Book> createBook(Book value) {
         return new JAXBElement<Book>(_Book_QNAME, Book.class, null, value);
     }
@@ -515,7 +555,8 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "cancelOrder")
-    public JAXBElement<CancelOrder> createCancelOrder(CancelOrder value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "cancelOrder")
+	public JAXBElement<CancelOrder> createCancelOrder(CancelOrder value) {
         return new JAXBElement<CancelOrder>(_CancelOrder_QNAME, CancelOrder.class, null, value);
     }
 
@@ -524,7 +565,8 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "checkOrderStatusResponse")
-    public JAXBElement<CheckOrderStatusResponse> createCheckOrderStatusResponse(CheckOrderStatusResponse value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "checkOrderStatusResponse")
+	public JAXBElement<CheckOrderStatusResponse> createCheckOrderStatusResponse(CheckOrderStatusResponse value) {
         return new JAXBElement<CheckOrderStatusResponse>(_CheckOrderStatusResponse_QNAME, CheckOrderStatusResponse.class, null, value);
     }
 
@@ -533,7 +575,8 @@ public class ObjectFactory {
      * 
      */
 //    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "cancelOrderResponse")
-    public JAXBElement<CancelOrderResponse> createCancelOrderResponse(CancelOrderResponse value) {
+    @XmlElementDecl(namespace = "http://service.comp433.luc.edu/", name = "cancelOrderResponse")
+	public JAXBElement<CancelOrderResponse> createCancelOrderResponse(CancelOrderResponse value) {
         return new JAXBElement<CancelOrderResponse>(_CancelOrderResponse_QNAME, CancelOrderResponse.class, null, value);
     }
 

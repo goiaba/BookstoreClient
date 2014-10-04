@@ -10,16 +10,16 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for searchBookByAuthorResponse complex type.
+ * <p>Java class for findOrderByCustomerLoginResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="searchBookByAuthorResponse">
+ * &lt;complexType name="findOrderByCustomerLoginResponse">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="return" type="{http://service.comp433.luc.edu/}book" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="return" type="{http://service.comp433.luc.edu/}order" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -29,13 +29,13 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "searchBookByAuthorResponse", propOrder = {
+@XmlType(name = "findOrderByCustomerLoginResponse", propOrder = {
     "_return"
 })
-public class SearchBookByAuthorResponse {
+public class FindOrderByCustomerLoginResponse {
 
     @XmlElement(name = "return")
-    protected List<Book> _return;
+    protected List<Order> _return;
 
     /**
      * Gets the value of the return property.
@@ -55,13 +55,13 @@ public class SearchBookByAuthorResponse {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Book }
+     * {@link Order }
      * 
      * 
      */
-    public List<Book> getReturn() {
+    public List<Order> getReturn() {
         if (_return == null) {
-            _return = new ArrayList<Book>();
+            _return = new ArrayList<Order>();
         }
         return this._return;
     }

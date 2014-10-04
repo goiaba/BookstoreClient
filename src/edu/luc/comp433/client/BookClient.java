@@ -21,9 +21,10 @@ import edu.luc.comp433.service.Book;
 import edu.luc.comp433.service.BookService;
 import edu.luc.comp433.service.Customer;
 import edu.luc.comp433.service.CustomerService;
+import edu.luc.comp433.service.Order;
 import edu.luc.comp433.service.OrderService;
+import edu.luc.comp433.service.OrderStatus;
 import edu.luc.comp433.service.Payment;
-import edu.luc.comp433.service.PaymentService;
 import edu.luc.comp433.service.PaymentType;
 
 /**
@@ -33,22 +34,21 @@ import edu.luc.comp433.service.PaymentType;
  */
 public final class BookClient {
 
+	protected static final String ADDRESS_SERVICE_ADDRESS = "http://localhost:8080/project2/Address";
 	protected static final String BOOK_SERVICE_ADDRESS = "http://localhost:8080/project2/Book";
 	protected static final String CUSTOMER_SERVICE_ADDRESS = "http://localhost:8080/project2/Customer";
-	private static final String ORDER_SERVICE_ADDRESS = "http://localhost:8080/project2/Order";
-	private static final String ADDRESS_SERVICE_ADDRESS = "http://localhost:8080/project2/Address";
-	private static final String PAYMENT_SERVICE_ADDRESS = "http://localhost:8080/project2/Payment";
+	protected static final String ORDER_SERVICE_ADDRESS = "http://localhost:8080/project2/Order";
+	protected static final String PAYMENT_SERVICE_ADDRESS = "http://localhost:8080/project2/Payment";
 
+	private static BufferedReader br = new BufferedReader(
+			new InputStreamReader(System.in));
 	private static Map<Integer, Integer> fieldSize = new HashMap<Integer, Integer>();
 	private static List<Short> selectedBooks = new ArrayList<Short>();
 
-	protected static BookService bookService;
+	private static AddressService addressService;
+	private static BookService bookService;
 	private static CustomerService customerService;
 	private static OrderService orderService;
-	private static AddressService addressService;
-	private static PaymentService paymentService;
-	
-	private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
 	static {
 		fieldSize.put(0, 5);
@@ -57,128 +57,8 @@ public final class BookClient {
 		fieldSize.put(3, 30);
 	}
 
-	public static void _1_listAll() {
-		printBooks("=+- List of available books -+=\n", getBookService()
-				.listAllBooks());
-	}
-
-	public static void _2_searchByTitle() throws IOException {
-		System.out.println("Type book title or part of it: ");
-		String term = br.readLine();
-		printBooks("=+- List of books of title like \"" + term + "\" -+=",
-				getBookService().searchBookByTitle(term));
-	}
-
-	public static void _3_searchByAuthor() throws IOException {
-		System.out.println("Type author name or part of it: ");
-		String term = br.readLine();
-		printBooks("=+- List of books from author name like \"" + term
-				+ "\" -+=", getBookService().searchBookByAuthor(term));
-
-	}
-
-	public static void _4_searchByPriceRange()
-			throws IOException {
-		System.out.println("Min price: ");
-		String minPrice = br.readLine();
-		System.out.println("Max price: ");
-		String maxPrice = br.readLine();
-		printBooks(
-				"=+- List of books by range price -+=",
-				getBookService().searchBookByPrice(new BigDecimal(minPrice),
-						new BigDecimal(maxPrice)));
-	}
-
-	public static void _5_selectBooksToBuy()
-			throws NumberFormatException, IOException {
-		System.out.println("Type the id's separated by ',': ");
-		String ids = br.readLine();
-		for (String id : ids.split(",")) {
-			selectedBooks.add(new Short(id));
-		}
-	}
-
-	public static void _6_printSelectedBooks() {
-		printBooks("=+- List of selected books -+=", getBookService()
-				.searchBookByIds(selectedBooks));
-	}
-
-	public static void _7_buySelectedBooks()
-			throws IOException {
-		_6_printSelectedBooks();
-		
-		System.out.print("\nType your login (empty if you don't have one): ");
-		String login = br.readLine();
-
-		Customer customer = getCustomerService().findCustomerByLogin(login);
-		Address address = null;
-		Payment payment = null;
-		List<Address> addresses = null;
-		List<Payment> payments = null;
-
-		if (null != customer) {
-			addresses = getAddressService().findAddressByCustomerId(customer.getId());
-			payments = getPaymentService().findPaymentByCustomerId(customer.getId());
-			printAddress(addresses);
-			System.out.print("Choose one address to ship or empty to register new one: ");
-			String addressId = br.readLine();
-			
-			if ("".equals(addressId)) {
-				address = createAddress();
-			} else {
-				address = getAddressService().findAddressById(new Short(addressId));
-			}
-			
-			printPayment(payments);
-			System.out.print("Choose one payment to ship or empty to register new one: ");
-			String paymentId = br.readLine();
-			
-			if ("".equals(paymentId)) {
-				payment = createPayment();
-			} else {
-				payment = getPaymentService().findPaymentById(new Short(paymentId));
-			}
-		} else {
-			customer = createCustomer();
-			address = createAddress();
-			payment = createPayment();
-		}
-
-		getOrderService().createOrder(customer, address,
-				getBookService().searchBookByIds(selectedBooks), payment);
-	}
-
-	public static void _8_clearSelectedBooks() {
-		selectedBooks.clear();
-	}
-
 	public static void main(String args[]) throws Exception {
 
-		Customer c = new Customer();
-		c.setLogin("bruno");
-		c.setName("Bruno Godoy");
-		c.setPassword("senha");
-		
-		Address a = new Address();
-		a.setCity("Chicago");
-		a.setComplement("apt 401");
-		a.setNumber("6230");
-		a.setState("IL");
-		a.setStreet("N Kenmore");
-		a.setZipcode(60660);
-		
-		Payment p = new Payment();
-		p.setCardHolderName("BRUNO G M CORREA");
-		p.setCardNumber("1234123412345678");
-		p.setExpirationMonth(12);
-		p.setExpirationYear(2017);
-		p.setSecurityCode(123);
-		p.setType(PaymentType.DEBIT);
-		
-		getOrderService().createOrder(c, a,
-				getBookService().searchBookByIds(Arrays.asList(Short.valueOf("1"), Short.valueOf("2"))), p);
-		
-		System.exit(0);
 		int option = 0;
 
 		do {
@@ -211,6 +91,12 @@ public final class BookClient {
 					_8_clearSelectedBooks();
 					break;
 				case 9:
+					_9_getOrderStatus();
+					break;
+				case 10:
+					_10_cancelOrder();
+					break;
+				case 11:
 					break;
 				default:
 					System.out.println("Invalid option. Try again.");
@@ -220,79 +106,223 @@ public final class BookClient {
 				System.out.println("Invalid option. Try again.");
 				option = 0;
 			}
-		} while (option != 9);
+		} while (option != 11);
 
+	}
+
+	public static void _1_listAll() throws IOException {
+		List<Book> books = getBookService().listAllBooks();
+		if (!books.isEmpty())
+			printBooks("=+- List of available books -+=\n", books);
+		else
+			System.out.println("No book found.");
+		waitEnter();
+	}
+
+	public static void _2_searchByTitle() throws IOException {
+		System.out.println("Type book title or part of it: ");
+		String term = br.readLine();
+		List<Book> books = getBookService().searchBookByTitle(term);
+		if (!books.isEmpty())
+			printBooks("=+- List of books of title like \"" + term + "\" -+=",
+				books);
+		else
+			System.out.println("No book found.");
+		waitEnter();
+	}
+
+	public static void _3_searchByAuthor() throws IOException {
+		System.out.println("Type author name or part of it: ");
+		String term = br.readLine();
+		List<Book> books = getBookService().searchBookByAuthor(term);
+		if (!books.isEmpty())
+			printBooks("=+- List of books from author name like \"" + term
+					+ "\" -+=", books);
+		else
+			System.out.println("No book found.");
+		waitEnter();
+	}
+
+	public static void _4_searchByPriceRange() throws IOException {
+		System.out.println("Min price: ");
+		String minPrice = br.readLine();
+		System.out.println("Max price: ");
+		String maxPrice = br.readLine();
+		List<Book> books = getBookService().searchBookByPrice(
+				new BigDecimal(minPrice), new BigDecimal(maxPrice));
+		if (!books.isEmpty())
+			printBooks("=+- List of books by range price -+=", books);
+		else
+			System.out.println("No book found.");
+		waitEnter();
+	}
+
+	public static void _5_selectBooksToBuy() throws NumberFormatException,
+			IOException {
+		System.out.println("Type the id's separated by ',': ");
+		String ids = br.readLine();
+		for (String id : ids.split(",")) {
+			selectedBooks.add(new Short(id.trim()));
+		}
+		System.out.println("Book(s) added to the list.");
+		waitEnter();
+	}
+
+	public static void _6_printSelectedBooks() throws IOException {
+		printBooks("=+- List of selected books -+=", getBookService()
+				.searchBookByIds(selectedBooks));
+		waitEnter();
+	}
+
+	public static void _7_buySelectedBooks() throws IOException {
+		_6_printSelectedBooks();
+
+		System.out.print("\nType your login (empty if you don't have one): ");
+		String login = br.readLine();
+
+		Customer customer = getCustomerService().findCustomerByLogin(login);
+		Address address = null;
+		Payment payment = null;
+		List<Address> addresses = null;
+
+		if (null != customer) {
+			addresses = getAddressService().findAddressByCustomerId(
+					customer.getId());
+			if (!addresses.isEmpty()) {
+				printAddress(addresses);
+				System.out
+						.print("Choose one address to ship or empty to register new one: ");
+				String addressId = br.readLine();
+				if ("".equals(addressId)) {
+					address = createAddress();
+				} else {
+					address = getAddressService().findAddressById(
+							new Short(addressId));
+				}
+			} else {
+				address = createAddress();
+			}
+
+			payment = createPayment();
+		} else {
+			customer = createCustomer();
+			address = createAddress();
+			payment = createPayment();
+		}
+
+		Short orderId = getOrderService().createOrder(customer, address,
+				getBookService().searchBookByIds(selectedBooks), payment);
+		System.out.println("Created order with id=" + orderId);
+		waitEnter();
+	}
+
+	public static void _8_clearSelectedBooks() throws IOException {
+		selectedBooks.clear();
+		System.out.println("List of selected book is empty");
+		waitEnter();
+	}
+
+	public static void _9_getOrderStatus() throws IOException {
+		System.out.print("\nType your login: ");
+		String login = br.readLine();
+		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
+
+		if (!orders.isEmpty()) {
+
+			printOrder(orders, false);
+			System.out.print("\nType id of order to see status: ");
+			String orderId = br.readLine().trim();
+			OrderStatus status = orderService.checkOrderStatus(new Short(
+					orderId));
+			System.out.println("Order [id=" + orderId + "] status: " + status);
+
+		} else {
+			System.out
+					.println("There is no order associated with this customer.");
+			br.readLine();
+		}
+		waitEnter();
+	}
+
+	public static void _10_cancelOrder() throws IOException {
+		System.out.print("\nType your login: ");
+		String login = br.readLine();
+		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
+
+		if (!orders.isEmpty()) {
+
+			printOrder(orders, true);
+			System.out
+					.println("\nNote: Only orders in 'PROCESSING' status can be cancelled.");
+
+			System.out.print("\nType id of order you want to cancel: ");
+			String orderId = br.readLine();
+			if (orderService.cancelOrder(new Short(orderId)))
+				System.out.println("Order canceled.");
+			else
+				System.out.println("Order could not be canceled.");
+
+		} else {
+			System.out
+					.println("There is no order associated with this customer.");
+		}
+		waitEnter();
 	}
 
 	private static AddressService getAddressService() {
 		if (null == addressService) {
-			addressService = (AddressService) getFactory(AddressService.class,
-					ADDRESS_SERVICE_ADDRESS).create();
+			addressService = createService(AddressService.class,
+					ADDRESS_SERVICE_ADDRESS);
 		}
 		return addressService;
 	}
 
-	private static PaymentService getPaymentService() {
-		if (null == paymentService) {
-			paymentService = (PaymentService) getFactory(PaymentService.class,
-					PAYMENT_SERVICE_ADDRESS).create();
-		}
-		return paymentService;
-	}
-
 	private static OrderService getOrderService() {
 		if (null == orderService) {
-			orderService = (OrderService) getFactory(OrderService.class,
-					ORDER_SERVICE_ADDRESS).create();
+			orderService = createService(OrderService.class,
+					ORDER_SERVICE_ADDRESS);
 		}
 		return orderService;
 	}
 
 	private static CustomerService getCustomerService() {
 		if (null == customerService) {
-			JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-			factory.getInInterceptors().add(new LoggingInInterceptor());
-			factory.getOutInterceptors().add(new LoggingOutInterceptor());
-			factory.setServiceClass(CustomerService.class);
-			factory.setAddress(CUSTOMER_SERVICE_ADDRESS);
-			customerService = (CustomerService) factory.create();
+			customerService = createService(CustomerService.class,
+					CUSTOMER_SERVICE_ADDRESS);
 		}
 		return customerService;
 	}
 
 	private static BookService getBookService() {
 		if (null == bookService) {
-			JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-			factory.getInInterceptors().add(new LoggingInInterceptor());
-			factory.getOutInterceptors().add(new LoggingOutInterceptor());
-			factory.setServiceClass(BookService.class);
-			factory.setAddress(BOOK_SERVICE_ADDRESS);
-			bookService = (BookService) factory.create();
+			bookService = createService(BookService.class, BOOK_SERVICE_ADDRESS);
 		}
 		return bookService;
 	}
 
-	private static JaxWsProxyFactoryBean getFactory(Class<?> serviceClass,
-			String address) {
+	@SuppressWarnings("unchecked")
+	private static <T> T createService(Class<T> serviceClass, String address) {
 		JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
 		factory.getInInterceptors().add(new LoggingInInterceptor());
 		factory.getOutInterceptors().add(new LoggingOutInterceptor());
 		factory.setServiceClass(serviceClass);
 		factory.setAddress(address);
-		return factory;
+		return (T) factory.create();
 	}
 
 	private static void printMenu() {
 		StringBuilder result = new StringBuilder(
 				"Choose one of the options below:\n");
-		result.append("1 - List all available books\n")
-				.append("2 - Search book by title\n")
-				.append("3 - Search book by author\n")
-				.append("4 - Search book by price range\n")
-				.append("5 - Select books to buy\n")
-				.append("6 - Print selected books\n")
-				.append("7 - Buy selected books\n")
-				.append("8 - Clear selected books\n").append("9 - Exit\n")
+		result.append(" 1 - List all available books\n")
+				.append(" 2 - Search book by title\n")
+				.append(" 3 - Search book by author\n")
+				.append(" 4 - Search book by price range\n")
+				.append(" 5 - Select books to buy\n")
+				.append(" 6 - Print selected books\n")
+				.append(" 7 - Buy selected books\n")
+				.append(" 8 - Clear selected books\n")
+				.append(" 9 - Get Order Status\n")
+				.append("10 - Cancel Order\n").append("11 - Exit\n")
 				.append("Option: ");
 		System.out.println(result.toString());
 	}
@@ -311,31 +341,24 @@ public final class BookClient {
 		System.out.println(row.toString());
 	}
 
-	/**
-	 * @param payments
-	 */
-	private static void printPayment(List<Payment> payments) {
-		System.out.println("=+- List of registered payments -+=");
+	private static void printOrder(List<Order> orders, boolean printStatus) {
+		System.out.println("=+- List of registered orders -+=");
 		StringBuilder row = new StringBuilder();
-		for (Payment payment : payments) {
+		for (Order order : orders) {
 			row.append("| ")
-					.append(tabulate(payment.getId().toString(), 0))
+					.append(tabulate(order.getId().toString(), 0))
 					.append(" | ")
-					.append(tabulate(payment.getCardHolderName(), 1))
-					.append(" | ")
-					.append("****"
-							+ tabulate(payment.getCardNumber()
-									.substring(12, 15), 2))
-					.append(" | ")
-					.append(tabulate(payment.getExpirationMonth() + "-"
-							+ payment.getExpirationYear(), 3)).append("|\n");
+					.append(tabulate(order.getPayment().getAmount()
+							.toPlainString(), 1)).append(" | ")
+					.append(tabulate(order.getPayment().getType().name(), 2));
+			if (printStatus)
+				row.append(" | ")
+					.append(tabulate(order.getStatus().value(), 3));
+			row.append("|\n");
 		}
 		System.out.println(row.toString());
 	}
 
-	/**
-	 * @param addresses
-	 */
 	private static void printAddress(List<Address> addresses) {
 		System.out.println("=+- List of registered addresses -+=");
 		StringBuilder row = new StringBuilder();
@@ -370,7 +393,7 @@ public final class BookClient {
 		}
 		return result.toString();
 	}
-	
+
 	private static Address createAddress() throws IOException {
 		System.out.println("=+- New Address -+=");
 		Address address = new Address();
@@ -401,10 +424,11 @@ public final class BookClient {
 		return customer;
 	}
 
-	private static Payment createPayment() throws NumberFormatException, IOException {
+	private static Payment createPayment() throws NumberFormatException,
+			IOException {
 		System.out.println("=+- New Payment Method -+=");
 		Payment payment = new Payment();
-		System.out.print("Payment type (1= Cash; 2= Credit; 3= Debit: ");
+		System.out.print("Payment type (1= Cash; 2= Credit; 3= Debit): ");
 		switch (Integer.parseInt(br.readLine())) {
 		case 1:
 			payment.setType(PaymentType.CASH);
@@ -418,7 +442,7 @@ public final class BookClient {
 		default:
 			payment.setType(PaymentType.CASH);
 		}
-		
+
 		if (!PaymentType.CASH.equals(payment.getType())) {
 			System.out.print("Card Holder Name: ");
 			payment.setCardHolderName(br.readLine());
@@ -432,5 +456,10 @@ public final class BookClient {
 			payment.setSecurityCode(Integer.parseInt(br.readLine()));
 		}
 		return payment;
+	}
+
+	private static void waitEnter() throws IOException {
+		System.out.println("\nPress <enter> to continue...");
+		System.in.read();
 	}
 }
