@@ -44,7 +44,7 @@ public final class BookClient {
 	private static CustomerService customerService;
 	private static OrderService orderService;
 	
-	private static String uri = "http://localhost:8080";
+	private static String uri = "http://localhost:8080/project2";
 	private static String addressServiceAddress;
 	private static String bookServiceAddress;
 	private static String customerServiceAddress;
@@ -62,16 +62,16 @@ public final class BookClient {
 		if (args.length != 1) {
 			System.out.println("********************************************************************************************");
 			System.out.println("***                                                                                      ***");
-			System.out.println("*** Using default local URI: http://localhost:8080. You can pass another one as argument ***");
+			System.out.println("*** Using default local URI: http://localhost:8080/project2. You can pass another one as argument ***");
 			System.out.println("***                                                                                      ***");
 			System.out.println("********************************************************************************************");
 		} else 		
 			uri = args[0];
 		
-		addressServiceAddress = uri + "/project2/Address";  
-		bookServiceAddress = uri + "/project2/Book";        
-		customerServiceAddress = uri + "/project2/Customer";
-		orderServiceAddress = uri + "/project2/Order";      
+		addressServiceAddress = uri + "/Address";  
+		bookServiceAddress = uri + "/Book";        
+		customerServiceAddress = uri + "/Customer";
+		orderServiceAddress = uri + "/Order";      
 		
 		int option = 0;
 
