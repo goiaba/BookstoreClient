@@ -34,21 +34,21 @@ import edu.luc.comp433.service.PaymentType;
  */
 public final class BookClient {
 
-	protected static final String ADDRESS_SERVICE_ADDRESS = "http://localhost:8080/project2/Address";
-	protected static final String BOOK_SERVICE_ADDRESS = "http://localhost:8080/project2/Book";
-	protected static final String CUSTOMER_SERVICE_ADDRESS = "http://localhost:8080/project2/Customer";
-	protected static final String ORDER_SERVICE_ADDRESS = "http://localhost:8080/project2/Order";
-	protected static final String PAYMENT_SERVICE_ADDRESS = "http://localhost:8080/project2/Payment";
-
 	private static BufferedReader br = new BufferedReader(
 			new InputStreamReader(System.in));
 	private static Map<Integer, Integer> fieldSize = new HashMap<Integer, Integer>();
 	private static List<Short> selectedBooks = new ArrayList<Short>();
-
+	
 	private static AddressService addressService;
 	private static BookService bookService;
 	private static CustomerService customerService;
 	private static OrderService orderService;
+	
+	private static String uri = "http://localhost:8080";
+	private static String addressServiceAddress;
+	private static String bookServiceAddress;
+	private static String customerServiceAddress;
+	private static String orderServiceAddress;
 
 	static {
 		fieldSize.put(0, 5);
@@ -59,12 +59,27 @@ public final class BookClient {
 
 	public static void main(String args[]) throws Exception {
 
+		if (args.length != 1) {
+			System.out.println("********************************************************************************************");
+			System.out.println("***                                                                                      ***");
+			System.out.println("*** Using default local URI: http://localhost:8080. You can pass another one as argument ***");
+			System.out.println("***                                                                                      ***");
+			System.out.println("********************************************************************************************");
+		} else 		
+			uri = args[0];
+		
+		addressServiceAddress = uri + "/project2/Address";  
+		bookServiceAddress = uri + "/project2/Book";        
+		customerServiceAddress = uri + "/project2/Customer";
+		orderServiceAddress = uri + "/project2/Order";      
+		
 		int option = 0;
 
 		do {
 			printMenu();
 			try {
 				option = new Integer(br.readLine());
+				System.out.println();
 				switch (option) {
 				case 1:
 					_1_listAll();
@@ -120,7 +135,7 @@ public final class BookClient {
 	}
 
 	public static void _2_searchByTitle() throws IOException {
-		System.out.println("Type book title or part of it: ");
+		System.out.print("Type book title or part of it: ");
 		String term = br.readLine();
 		List<Book> books = getBookService().searchBookByTitle(term);
 		if (!books.isEmpty())
@@ -132,7 +147,7 @@ public final class BookClient {
 	}
 
 	public static void _3_searchByAuthor() throws IOException {
-		System.out.println("Type author name or part of it: ");
+		System.out.print("Type author name or part of it: ");
 		String term = br.readLine();
 		List<Book> books = getBookService().searchBookByAuthor(term);
 		if (!books.isEmpty())
@@ -144,9 +159,9 @@ public final class BookClient {
 	}
 
 	public static void _4_searchByPriceRange() throws IOException {
-		System.out.println("Min price: ");
+		System.out.print("Min price: ");
 		String minPrice = br.readLine();
-		System.out.println("Max price: ");
+		System.out.print("Max price: ");
 		String maxPrice = br.readLine();
 		List<Book> books = getBookService().searchBookByPrice(
 				new BigDecimal(minPrice), new BigDecimal(maxPrice));
@@ -159,7 +174,7 @@ public final class BookClient {
 
 	public static void _5_selectBooksToBuy() throws NumberFormatException,
 			IOException {
-		System.out.println("Type the id's separated by ',': ");
+		System.out.print("Type the id's separated by ',': ");
 		String ids = br.readLine();
 		for (String id : ids.split(",")) {
 			selectedBooks.add(new Short(id.trim()));
@@ -272,7 +287,7 @@ public final class BookClient {
 	private static AddressService getAddressService() {
 		if (null == addressService) {
 			addressService = createService(AddressService.class,
-					ADDRESS_SERVICE_ADDRESS);
+					addressServiceAddress);
 		}
 		return addressService;
 	}
@@ -280,7 +295,7 @@ public final class BookClient {
 	private static OrderService getOrderService() {
 		if (null == orderService) {
 			orderService = createService(OrderService.class,
-					ORDER_SERVICE_ADDRESS);
+					orderServiceAddress);
 		}
 		return orderService;
 	}
@@ -288,14 +303,14 @@ public final class BookClient {
 	private static CustomerService getCustomerService() {
 		if (null == customerService) {
 			customerService = createService(CustomerService.class,
-					CUSTOMER_SERVICE_ADDRESS);
+					customerServiceAddress);
 		}
 		return customerService;
 	}
 
 	private static BookService getBookService() {
 		if (null == bookService) {
-			bookService = createService(BookService.class, BOOK_SERVICE_ADDRESS);
+			bookService = createService(BookService.class, bookServiceAddress);
 		}
 		return bookService;
 	}
@@ -323,8 +338,8 @@ public final class BookClient {
 				.append(" 8 - Clear selected books\n")
 				.append(" 9 - Get Order Status\n")
 				.append("10 - Cancel Order\n").append("11 - Exit\n")
-				.append("Option: ");
-		System.out.println(result.toString());
+				.append("\nOption: ");
+		System.out.print(result.toString());
 	}
 
 	private static void printBooks(String title, List<Book> books) {
@@ -459,7 +474,7 @@ public final class BookClient {
 	}
 
 	private static void waitEnter() throws IOException {
-		System.out.println("\nPress <enter> to continue...");
+		System.out.print("\nPress <enter> to continue...");
 		System.in.read();
 	}
 }
