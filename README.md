@@ -11,6 +11,8 @@ The default URI points to http://localhost:8080/project2 for testing purposes. O
 
 java -jar BookstoreClient.jar http://puluceno.com/ws
 
+Tip: You can redirect the stderr to somewhere else than default output to have a better experience (for example, 2> /dev/null in linux or 2> nil in windows)
+
 The common steps to buy a book (or books):
 
         1 - Use one of the options to retrieve available books (options 1 to 4 of menu);

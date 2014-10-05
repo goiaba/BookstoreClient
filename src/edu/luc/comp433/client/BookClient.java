@@ -201,6 +201,12 @@ public final class BookClient {
 	}
 
 	public static void _7_buySelectedBooks() throws IOException {
+		if (selectedBooks.isEmpty()) {
+			System.out.println("You need to select some book to buy.");
+			waitEnter();
+			return;
+		}
+			
 		_6_printSelectedBooks(false);
 
 		System.out.print("\nType your login (empty if you don't have one): ");
@@ -238,8 +244,12 @@ public final class BookClient {
 
 		Short orderId = getOrderService().createOrder(customer, address,
 				getBookService().searchBookByIds(selectedBooks), payment);
-		selectedBooks.clear();
-		System.out.println("Order created with id=" + orderId);
+		
+		if (null != orderId) {
+			selectedBooks.clear();
+			System.out.println("Order created with id=" + orderId);
+		} else 
+			System.out.println("Error creating order.");
 		waitEnter();
 	}
 
