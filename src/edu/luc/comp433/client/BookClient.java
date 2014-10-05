@@ -44,7 +44,7 @@ public final class BookClient {
 	private static CustomerService customerService;
 	private static OrderService orderService;
 
-	private static String uri = "http://localhost:8080/project2";
+	private static String uri = "http://puluceno.com/ws";
 	private static String addressServiceAddress;
 	private static String bookServiceAddress;
 	private static String customerServiceAddress;
@@ -61,15 +61,15 @@ public final class BookClient {
 
 		if (args.length != 1) {
 			System.out
-					.println("**********************************************************************************");
+					.println("**************************************************************************");
 			System.out
-					.println("***                                                                            ***");
+					.println("***                                                                    ***");
+			System.out.println("*** Using " + uri
+					+ ". You can pass another URI as argument ***");
 			System.out
-					.println("*** Using http://localhost:8080/project2. You can pass another URI as argument ***");
+					.println("***                                                                    ***");
 			System.out
-					.println("***                                                                            ***");
-			System.out
-					.println("**********************************************************************************");
+					.println("**************************************************************************");
 			waitEnter();
 		} else
 			uri = args[0];
@@ -206,7 +206,7 @@ public final class BookClient {
 			waitEnter();
 			return;
 		}
-			
+
 		_6_printSelectedBooks(false);
 
 		System.out.print("\nType your login (empty if you don't have one): ");
@@ -244,11 +244,11 @@ public final class BookClient {
 
 		Short orderId = getOrderService().createOrder(customer, address,
 				getBookService().searchBookByIds(selectedBooks), payment);
-		
+
 		if (null != orderId) {
 			selectedBooks.clear();
 			System.out.println("Order created with id=" + orderId);
-		} else 
+		} else
 			System.out.println("Error creating order.");
 		waitEnter();
 	}

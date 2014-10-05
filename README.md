@@ -7,11 +7,7 @@ There is a jar file stored under distrib folder that can be run to test the Book
 
 java -jar BookstoreClient.jar <URI>
 
-The default URI points to http://localhost:8080/project2 for testing purposes. Our services are located at http://puluceno.com/ws so the right way of executing the client is:
-
-java -jar BookstoreClient.jar http://puluceno.com/ws
-
-Tip: You can redirect the stderr to somewhere else than default output to have a better experience (for example, 2> /dev/null in linux or 2> nil in windows)
+The default URI points to http://puluceno.com/ws so the user can omit the URI argument. Tip: You can redirect the stderr to somewhere else than default output to have a better experience (for example, 2> /dev/null in linux or 2> nil in windows)
 
 The common steps to buy a book (or books):
 
