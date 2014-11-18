@@ -3,29 +3,27 @@ package edu.luc.comp433.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cxf.common.i18n.Exception;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import edu.luc.comp433.service.Address;
-import edu.luc.comp433.service.AddressService;
-import edu.luc.comp433.service.Book;
-import edu.luc.comp433.service.BookService;
-import edu.luc.comp433.service.Customer;
-import edu.luc.comp433.service.CustomerService;
-import edu.luc.comp433.service.Order;
-import edu.luc.comp433.service.OrderService;
-import edu.luc.comp433.service.OrderStatus;
-import edu.luc.comp433.service.Payment;
-import edu.luc.comp433.service.PaymentType;
+import org.apache.cxf.common.i18n.Exception;
+
+import edu.luc.comp433.client.util.WebClientUtil;
+import edu.luc.comp433.representation.Address;
+import edu.luc.comp433.representation.Book;
+import edu.luc.comp433.representation.Customer;
+import edu.luc.comp433.representation.Order;
+import edu.luc.comp433.representation.Payment;
+import edu.luc.comp433.representation.enumerator.OrderStatus;
+import edu.luc.comp433.representation.enumerator.PaymentType;
 
 /**
  *
@@ -34,21 +32,37 @@ import edu.luc.comp433.service.PaymentType;
  */
 public final class BookClient {
 
+	private static final String BOOK_PATH = "books/";
+
+	private static final String CUSTOMER_ID_PATH_PARAM = "{customerId}";
+	private static final String CUSTOMER_LOGIN_PATH_PARAM = "{login}";
+	private static final String ADDRESS_ID_PATH_PARAM = "{addressId}";
+	private static final String ORDER_ID_PATH_PARAM = "{orderId}";
+
+	private static final String CUSTOMER_PATH = "customers/";
+	private static final String CUSTOMER_BY_LOGIN_PATH = CUSTOMER_PATH
+			+ CUSTOMER_LOGIN_PATH_PARAM;
+	private static final String ORDER_PATH = "orders/";
+
+	private static final String ADDRESS_PATH = "addresses/";
+	private static final String ADDRESS_OF_CUSTOMER_PATH = ADDRESS_PATH
+			+ CUSTOMER_PATH + CUSTOMER_ID_PATH_PARAM;
+	private static final String ADDRESS_BY_ID_PATH = ADDRESS_PATH
+			+ ADDRESS_ID_PATH_PARAM;
+
+	private static final String ORDER_BY_CUST_LOGIN_PATH = ORDER_PATH
+			+ CUSTOMER_LOGIN_PATH_PARAM;
+	private static final String ORDER_STATUS_PATH = ORDER_PATH
+			+ ORDER_ID_PATH_PARAM + "/status";
+	private static final String ORDER_CANCEL_PATH = ORDER_PATH
+			+ ORDER_ID_PATH_PARAM + "/cancel";
+
+	private static String uri = "http://localhost:8080/project3/";
+
 	private static BufferedReader br = new BufferedReader(
 			new InputStreamReader(System.in));
 	private static Map<Integer, Integer> fieldSize = new HashMap<Integer, Integer>();
 	private static List<Short> selectedBooks = new ArrayList<Short>();
-
-	private static AddressService addressService;
-	private static BookService bookService;
-	private static CustomerService customerService;
-	private static OrderService orderService;
-
-	private static String uri = "http://puluceno.com/ws";
-	private static String addressServiceAddress;
-	private static String bookServiceAddress;
-	private static String customerServiceAddress;
-	private static String orderServiceAddress;
 
 	static {
 		fieldSize.put(0, 5);
@@ -57,7 +71,16 @@ public final class BookClient {
 		fieldSize.put(3, 30);
 	}
 
-	public static void main(String args[]) throws Exception {
+	public static void main(String args[]) throws Exception, NumberFormatException, IOException {
+		
+//		System.out.println(orderStatusPath(new Integer(1).shortValue()));
+//		System.out.println(customerByLoginPath("bruno"));
+//		System.out.println(addresOfCustomerPath(new Integer(3).shortValue()));
+//		System.out.println(addressByIdPath("1"));
+//		System.out.println(orderByCustLoginPath("bruno"));
+//		System.out.println(cancelOrderPath(new Integer(2).shortValue()));
+//
+//		System.exit(0);
 
 		if (args.length != 1) {
 			System.out
@@ -73,11 +96,6 @@ public final class BookClient {
 			waitEnter();
 		} else
 			uri = args[0];
-
-		addressServiceAddress = uri + "/Address";
-		bookServiceAddress = uri + "/Book";
-		customerServiceAddress = uri + "/Customer";
-		orderServiceAddress = uri + "/Order";
 
 		int option = 0;
 
@@ -126,6 +144,9 @@ public final class BookClient {
 			} catch (NumberFormatException | IOException e) {
 				System.out.println("Invalid option. Try again.");
 				option = 0;
+			} catch (NotFoundException e) {
+				System.out.println("Resource not found.");
+				waitEnter();
 			} catch (RuntimeException e) {
 				System.out.println("Error processing your request.");
 				waitEnter();
@@ -136,7 +157,10 @@ public final class BookClient {
 	}
 
 	public static void _1_listAll() {
-		List<Book> books = getBookService().listAllBooks();
+		List<Book> books = WebClientUtil
+				.createDefaultGetRequest(uri, BOOK_PATH).get(
+						new GenericType<List<Book>>() {
+						});
 		if (!books.isEmpty())
 			printBooks("=+- List of available books -+=\n", books);
 		else
@@ -147,7 +171,12 @@ public final class BookClient {
 	public static void _2_searchByTitle() throws IOException {
 		System.out.print("Type book title or part of it: ");
 		String term = br.readLine();
-		List<Book> books = getBookService().searchBookByTitle(term);
+
+		Map<String, String> qParams = new HashMap<String, String>();
+		qParams.put("title", term);
+		List<Book> books = WebClientUtil.createDefaultGetRequest(uri,
+				BOOK_PATH, qParams).get(new GenericType<List<Book>>() {
+		});
 		if (!books.isEmpty())
 			printBooks("=+- List of books of title like \"" + term + "\" -+=",
 					books);
@@ -159,7 +188,11 @@ public final class BookClient {
 	public static void _3_searchByAuthor() throws IOException {
 		System.out.print("Type author name or part of it: ");
 		String term = br.readLine();
-		List<Book> books = getBookService().searchBookByAuthor(term);
+		Map<String, String> qParams = new HashMap<String, String>();
+		qParams.put("author", term);
+		List<Book> books = WebClientUtil.createDefaultGetRequest(uri,
+				BOOK_PATH, qParams).get(new GenericType<List<Book>>() {
+		});
 		if (!books.isEmpty())
 			printBooks("=+- List of books from author name like \"" + term
 					+ "\" -+=", books);
@@ -173,8 +206,12 @@ public final class BookClient {
 		String minPrice = br.readLine();
 		System.out.print("Max price: ");
 		String maxPrice = br.readLine();
-		List<Book> books = getBookService().searchBookByPrice(
-				new BigDecimal(minPrice), new BigDecimal(maxPrice));
+		Map<String, String> qParams = new HashMap<String, String>();
+		qParams.put("minPrice", minPrice);
+		qParams.put("maxPrice", maxPrice);
+		List<Book> books = WebClientUtil.createDefaultGetRequest(uri,
+				BOOK_PATH, qParams).get(new GenericType<List<Book>>() {
+		});
 		if (!books.isEmpty())
 			printBooks("=+- List of books by range price -+=", books);
 		else
@@ -194,8 +231,18 @@ public final class BookClient {
 	}
 
 	public static void _6_printSelectedBooks(boolean waitEnter) {
-		printBooks("=+- List of selected books -+=", getBookService()
-				.searchBookByIds(selectedBooks));
+		if (selectedBooks.isEmpty()) {
+			System.out.println("No books selected.");
+			waitEnter();
+			return;
+		}
+
+		List<Book> books = WebClientUtil.createQueryParam(
+				WebClientUtil.createDefaultGetRequest(uri, BOOK_PATH), "id",
+				selectedBooks).get(new GenericType<List<Book>>() {
+		});
+
+		printBooks("=+- List of selected books -+=", books);
 		if (waitEnter)
 			waitEnter();
 	}
@@ -211,15 +258,22 @@ public final class BookClient {
 
 		System.out.print("\nType your login (empty if you don't have one): ");
 		String login = br.readLine();
+		Customer customer = null;
 
-		Customer customer = getCustomerService().findCustomerByLogin(login);
+		if (null != login && login.length() > 0) {
+			customer = WebClientUtil.createDefaultGetRequest(uri,
+					customerByLoginPath(login)).get(Customer.class);
+		}
 		Address address = null;
 		Payment payment = null;
 		List<Address> addresses = null;
 
 		if (null != customer) {
-			addresses = getAddressService().findAddressByCustomerId(
-					customer.getId());
+			addresses = WebClientUtil.createDefaultGetRequest(uri,
+					addresOfCustomerPath(customer.getId())).get(
+					new GenericType<List<Address>>() {
+					});
+
 			if (!addresses.isEmpty()) {
 				printAddress(addresses);
 				System.out
@@ -228,8 +282,8 @@ public final class BookClient {
 				if ("".equals(addressId)) {
 					address = createAddress();
 				} else {
-					address = getAddressService().findAddressById(
-							new Short(addressId));
+					address = WebClientUtil.createDefaultGetRequest(uri,
+							addressByIdPath(addressId)).get(Address.class);
 				}
 			} else {
 				address = createAddress();
@@ -242,8 +296,24 @@ public final class BookClient {
 			payment = createPayment();
 		}
 
-		Short orderId = getOrderService().createOrder(customer, address,
-				getBookService().searchBookByIds(selectedBooks), payment);
+		Order order = new Order();
+		order.setAddress(address);
+		order.setCustomer(customer);
+		order.setPayment(payment);
+		List<Book> books = WebClientUtil.createQueryParam(
+				WebClientUtil.createDefaultGetRequest(uri, BOOK_PATH), "id",
+				selectedBooks).get(new GenericType<List<Book>>() {
+		});
+		order.setBookList(books);
+
+		/*
+		 * Creating the order resource.
+		 */
+		Response response = WebClientUtil.createDefaultPostRequest(uri,
+				ORDER_PATH).post(order);
+
+		String orderId = response.getLocation().toASCIIString();
+		orderId = orderId.substring(orderId.lastIndexOf("/")+1);
 
 		if (null != orderId) {
 			selectedBooks.clear();
@@ -262,14 +332,18 @@ public final class BookClient {
 	public static void _9_getOrderStatus() throws IOException {
 		System.out.print("\nType your login: ");
 		String login = br.readLine();
-		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
+		List<Order> orders = WebClientUtil.createDefaultGetRequest(uri,
+				orderByCustLoginPath(login)).get(
+				new GenericType<List<Order>>() {
+				});
 
 		if (!orders.isEmpty()) {
 			printOrder(orders, false);
 			System.out.print("\nType id of order to see status: ");
 			Short orderId = new Short(br.readLine().trim());
-			if (customerOwnsOrder(orders, orderId)) {
-				OrderStatus status = orderService.checkOrderStatus(orderId);
+			if (null != customerOwnsOrder(orders, orderId)) {
+				OrderStatus status = WebClientUtil.createDefaultGetRequest(uri,
+						orderStatusPath(orderId)).get(OrderStatus.class);
 				System.out.println("Order [id=" + orderId + "] status: "
 						+ status);
 			} else {
@@ -287,7 +361,10 @@ public final class BookClient {
 	public static void _10_cancelOrder() throws IOException {
 		System.out.print("\nType your login: ");
 		String login = br.readLine();
-		List<Order> orders = getOrderService().findOrderByCustomerLogin(login);
+		List<Order> orders = WebClientUtil.createDefaultGetRequest(uri,
+				orderByCustLoginPath(login)).get(
+				new GenericType<List<Order>>() {
+				});
 
 		if (!orders.isEmpty()) {
 			printOrder(orders, true);
@@ -295,11 +372,24 @@ public final class BookClient {
 					.println("\nNote: Only orders in 'PROCESSING' status can be cancelled.");
 			System.out.print("\nType id of order you want to cancel: ");
 			Short orderId = new Short(br.readLine().trim());
-			if (customerOwnsOrder(orders, orderId)) {
-				if (orderService.cancelOrder(orderId))
-					System.out.println("Order canceled.");
+			Order orderToCancel = customerOwnsOrder(orders, orderId);
+			if (null != orderToCancel) {
+
+				Response response = WebClientUtil.createDefaultPutRequest(uri,
+						cancelOrderPath(orderId)).put(orderToCancel);
+
+				if (Status.OK.equals(response.getStatus())) {
+					boolean orderCancelled = (boolean) response.getEntity();
+					if (orderCancelled)
+						System.out.println("Order canceled.");
+					else
+						System.out.println("Order could not be canceled.");
+				} else if (Status.NOT_FOUND.equals(response.getStatus()))
+					System.out.println("Order does not exist.");
+				else if (Status.BAD_REQUEST.equals(response.getStatus()))
+					System.out.println("Order id not specified.");
 				else
-					System.out.println("Order could not be canceled.");
+					System.out.println("Order canceled.");
 			} else {
 				System.out.println("There is no order with id=" + orderId
 						+ " associated with this customer.");
@@ -309,47 +399,6 @@ public final class BookClient {
 					.println("There is no order associated with this customer.");
 		}
 		waitEnter();
-	}
-
-	private static AddressService getAddressService() {
-		if (null == addressService) {
-			addressService = createService(AddressService.class,
-					addressServiceAddress);
-		}
-		return addressService;
-	}
-
-	private static OrderService getOrderService() {
-		if (null == orderService) {
-			orderService = createService(OrderService.class,
-					orderServiceAddress);
-		}
-		return orderService;
-	}
-
-	private static CustomerService getCustomerService() {
-		if (null == customerService) {
-			customerService = createService(CustomerService.class,
-					customerServiceAddress);
-		}
-		return customerService;
-	}
-
-	private static BookService getBookService() {
-		if (null == bookService) {
-			bookService = createService(BookService.class, bookServiceAddress);
-		}
-		return bookService;
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <T> T createService(Class<T> serviceClass, String address) {
-		JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
-		factory.getInInterceptors().add(new LoggingInInterceptor());
-		factory.getOutInterceptors().add(new LoggingOutInterceptor());
-		factory.setServiceClass(serviceClass);
-		factory.setAddress(address);
-		return (T) factory.create();
 	}
 
 	private static void printMenu() {
@@ -500,12 +549,12 @@ public final class BookClient {
 		return payment;
 	}
 
-	private static boolean customerOwnsOrder(List<Order> orders, Short orderId) {
+	private static Order customerOwnsOrder(List<Order> orders, Short orderId) {
 		for (Order order : orders) {
 			if (order.getId().equals(orderId))
-				return true;
+				return order;
 		}
-		return false;
+		return null;
 	}
 
 	private static void waitEnter() {
@@ -515,4 +564,37 @@ public final class BookClient {
 		} catch (IOException ex) {
 		}
 	}
+
+	private static String pathAssembler(String path, String param, Object value) {
+		return path.replace(param, value.toString());
+	}
+
+	private static String orderStatusPath(Short orderId) {
+		return pathAssembler(ORDER_STATUS_PATH, ORDER_ID_PATH_PARAM, orderId);
+	}
+
+	private static String customerByLoginPath(String login) {
+		return pathAssembler(CUSTOMER_BY_LOGIN_PATH, CUSTOMER_LOGIN_PATH_PARAM,
+				login);
+	}
+
+	private static String addresOfCustomerPath(Short customerId) {
+		return pathAssembler(ADDRESS_OF_CUSTOMER_PATH, CUSTOMER_ID_PATH_PARAM,
+				customerId);
+	}
+
+	private static String addressByIdPath(String addressId) {
+		return pathAssembler(ADDRESS_BY_ID_PATH, ADDRESS_ID_PATH_PARAM,
+				addressId);
+	}
+
+	private static String orderByCustLoginPath(String login) {
+		return pathAssembler(ORDER_BY_CUST_LOGIN_PATH,
+				CUSTOMER_LOGIN_PATH_PARAM, login);
+	}
+
+	private static String cancelOrderPath(Short orderId) {
+		return pathAssembler(ORDER_CANCEL_PATH, ORDER_ID_PATH_PARAM, orderId);
+	}
+
 }
