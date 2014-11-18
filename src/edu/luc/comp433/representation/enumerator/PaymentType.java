@@ -1,0 +1,12 @@
+package edu.luc.comp433.representation.enumerator;
+
+/**
+ * Possible PaymentRepresentation Types are Credit, Debit and Cash.
+ * 
+ * @author Thiago Vieira Puluceno
+ *
+ */
+public enum PaymentType {
+	CREDIT, DEBIT, CASH
+}
+
